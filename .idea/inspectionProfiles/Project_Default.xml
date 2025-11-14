@@ -1,0 +1,25 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="ignoredPackages">
+        <list>
+          <option value="numpy" />
+          <option value="pandas" />
+          <option value="matplotlib" />
+          <option value="seaborn" />
+          <option value="jupyterlab" />
+          <option value="ipykernel" />
+          <option value="ipywidgets" />
+          <option value="notebook" />
+          <option value="requests" />
+          <option value="python-dateutil" />
+          <option value="pytz" />
+          <option value="PyYAML" />
+          <option value="packaging" />
+          <option value="pyarrow" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
