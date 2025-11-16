@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, FFMpegWriter
 
 time_step = 1
+v = 0.3
 def initialize() :
     global N, L, x_positions, y_positions, directions, order_parameters
     x_positions = [ np.round(np.random.uniform(0, L, N), 2) ]
@@ -84,8 +85,8 @@ def animation() :
     ax.set_title(f"N={N}   L={L}   v={v}   R={R}   etta={etta}   T=100")
     ani.save(f"../../animations/sample{t}.mp4")
 
-def run_simulation() :
-  global L, directions, order_parameters
+def run_simulation(N, L, R, etta) :
+  global directions, order_parameters
   initialize()
   for t in range(100) :
     update()
