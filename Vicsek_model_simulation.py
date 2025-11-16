@@ -71,7 +71,7 @@ def animation() :
                                 [np.cos(directions[0][individual_particle])],
                                 [np.sin(directions[0][individual_particle])],
                                 color='red', scale=20, width=0.005)
-    def update(frame):
+    def update0(frame):
       quiver.set_offsets(np.column_stack((x_positions[frame], y_positions[frame])))
       quiver.set_UVC(np.cos(directions[frame]), np.sin(directions[frame]))
       individual_arrow.set_offsets(np.column_stack((
@@ -80,12 +80,12 @@ def animation() :
       individual_arrow.set_UVC([np.cos(directions[frame][individual_particle])],
                                [np.sin(directions[frame][individual_particle])])
       return quiver, individual_arrow,
-    ani = FuncAnimation(fig, update, frames=T, interval=300, blit=True)
+    ani = FuncAnimation(fig, update0, frames=T, interval=300, blit=True)
     ax.set_title(f"N={N}   L={L}   v={v}   R={R}   etta={etta}   T=100")
-    ani.save(f"animations/sample{t}.mp4")
+    ani.save(f"../../animations/sample{t}.mp4")
 
 def run_simulation() :
-  global directions, order_parameters
+  global L, directions, order_parameters
   initialize()
   for t in range(100) :
     update()
