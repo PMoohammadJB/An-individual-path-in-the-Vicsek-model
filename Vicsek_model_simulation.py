@@ -5,62 +5,40 @@ import math
 import secrets as st
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, FFMpegWriter
+import itertools
+from scipy.spatial import cKDTree
 
 time_step = 1
 v = 0.3
 def initialize() :
-    global N, L, x_positions, y_positions, directions, order_parameters
-    x_positions = [ np.round(np.random.uniform(0, L, N), 2) ]
-    y_positions = [ np.round(np.random.uniform(0, L, N), 2) ]
-    directions = [ np.round(np.random.uniform(0, 2*np.pi, N), 2) ]
+    global N, L, positions, directions, order_parameters
+    positions = np.zeros((N, T, 2))
+    directions = np.zeros((N, T))
+    positions[:, 0, :] = np.random.uniform(0, L, (N, 2))
+    directions[:, 0] = np.random.uniform(0, 2*np.pi, (N, 1))
 
-    #order parameter
-    v_xs = np.cos(directions[-1])
-    v_ys = np.sin(directions[-1])
-    order_parameter = ( np.mean(v_xs)**2 + np.mean(v_ys)**2 )**0.5
-    order_parameters = [order_parameter]
-
-def update() :
+def update(t) :
     global R, v, etta, new_xs, new_ys, new_dirs, order_parameter
-    xs = x_positions[-1]
-    ys = y_positions[-1]
-    v_xs = v*np.cos(directions[-1])
-    v_ys = v*np.sin(directions[-1])
+
     #positions update
-    new_xs = (xs + time_step*v_xs)%L
-    new_ys = (ys + time_step*v_ys)%L
+    v_vector = np.column_stack([
+        np.cos(directions[:, t-1]),
+        np.sin(directions[:, t-1])
+    ])
+    positions[:, t, :] = positions[:, t-1, :] + v_vector*time_step
+
+    #neighbors
+    tree = cKDTree(positions)
+    neighbors_lists = tree.query_ball_tree(tree, R)
+
     #direction update
-    new_dirs = []
-    for n in range(N) :
-        dx = xs - xs[n]
-        dy = ys - ys[n]
-        # applying periodic boundary condition
-        dx = (dx+L/2)%L - L/2
-        dy = (dy+L/2)%L - L/2
-
-        neighboring_mask = (dx**2+dy**2)**0.5 < R
-        n_neighbors_mean_vx = np.mean( v_xs[neighboring_mask] )
-        n_neighbors_mean_vy = np.mean( v_ys[neighboring_mask] )
-
-        if not n_neighbors_mean_vx == 0 :
-            new_dir = (math.atan2( n_neighbors_mean_vy, n_neighbors_mean_vx )
-                     + rd.uniform(-etta/2, etta/2))
-        else :
-            new_dir = np.pi/2 if n_neighbors_mean_vy > 0 else -np.pi/2
-        new_dirs.append(new_dir%2*np.pi)
-    #order parameter
-    v_xs = v * np.cos(new_dirs)
-    v_ys = v * np.sin(new_dirs)
-    order_parameter = np.sqrt( np.mean(v_xs)**2 + np.mean(v_ys)**2 )/v
-
-def observe() :
-  global x_positions, y_positions, directions, order_parameters
-  x_positions.append(new_xs)
-  y_positions.append(new_ys)
-  directions.append(new_dirs)
-  order_parameters.append(order_parameter)
+    for i in range(len(neighbors_lists)) :
+        x_dirs = np.cos(directions[neighbors_lists[i], t-1])
+        y_dirs = np.sin(directions[neighbors_lists[i], t-1])
+        directions[i, t] = math.atan(np.mean(y_dirs)/np.mean(x_dirs))
 
 def animation() :
+    global T
     fig, ax = plt.subplots()
     ax.set_xlim(0, L)
     ax.set_ylim(0, L)
@@ -82,15 +60,16 @@ def animation() :
                                [np.sin(directions[frame][individual_particle])])
       return quiver, individual_arrow,
     ani = FuncAnimation(fig, update0, frames=T, interval=300, blit=True)
-    ax.set_title(f"N={N}   L={L}   v={v}   R={R}   etta={etta}   T=100")
-    ani.save(f"../../animations/sample{t}.mp4")
+    ax.set_title(f"N={N}   L={L}   v={v}   R={R}   etta={etta}   T={T}")
+    ani.save(f"../../animations/sample{sample}.gif")
 
-def run_simulation(N, L, R, etta) :
+def run_simulation() :
   global directions, order_parameters
   initialize()
-  for t in range(100) :
+  for t in range(99) :
     update()
     observe()
-    if 1000*t%n_samples == 0 :
-        animation()
 
+
+
+#order parameter
